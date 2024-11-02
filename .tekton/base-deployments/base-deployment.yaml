@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: base-deployment
+  namespace: learning
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kube-learning-app
+  template:
+    metadata:
+      labels:
+        app: kube-learning-app
+    spec:
+      serviceAccountName: lucky-docker
+      containers:
+        - name: kube-learning-container
+          image: siddharthlucky/learning:latest
+          resources:
+            requests:
+              memory: "128Mi"       # Minimum memory required
+              cpu: "250m"           # Minimum CPU required
+            limits:
+              memory: "256Mi"       # Maximum memory allowed
+              cpu: "500m"           # Maximum CPU allowed

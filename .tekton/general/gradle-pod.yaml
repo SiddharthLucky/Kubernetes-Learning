@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gradle-runner
+  namespace: learning
+spec:
+  containers:
+    - name: gradle
+      image: gradle:latest
+      command: ["sleep", "infinity"]
+      volumeMounts:
+        - name: gradle-cache
+          mountPath: /home/gradle/.gradle
+  restartPolicy: Never
+  volumes:
+    - name: gradle-cache
+      emptyDir: {}

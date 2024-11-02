@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kube-learning-service
+  namespace: learning
+spec:
+  selector:
+    app: kube-learning-app
+  ports:
+    - protocol: TCP
+      port: 8080           # The port your app is exposed on
+      targetPort: 8080      # The container port
+      nodePort: 30080       # External port on the node (adjustable; 30000-32767 range)
+  type: NodePort
