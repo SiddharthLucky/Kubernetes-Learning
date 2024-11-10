@@ -5,9 +5,14 @@ metadata:
   namespace: logging
 spec:
   selector:
-    app: elasticsearch-kibana
+    app: elasticsearch-kibana  # This selector should match the labels in your Deployment
   ports:
-    - protocol: TCP
+    - name: elasticsearch
+      protocol: TCP
+      port: 9200
+      targetPort: 9200  # Port for Elasticsearch
+    - name: kibana
+      protocol: TCP
       port: 5601
-      targetPort: 5601  # Expose Kibana on this service
-  type: NodePort  # Use LoadBalancer if on a cloud provider
+      targetPort: 5601  # Port for Kibana
+  type: NodePort  # Use NodePort to expose Kibana outside the cluster

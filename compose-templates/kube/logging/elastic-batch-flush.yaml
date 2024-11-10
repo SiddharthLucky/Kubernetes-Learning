@@ -13,13 +13,13 @@ spec:
           args:
             - |
               # Wait for Elasticsearch to be ready
-              until curl -s http://elasticsearch.logging.svc.cluster.local:9200; do
+              until curl -s http://localhost:30753; do
                 echo "Waiting for Elasticsearch..."
                 sleep 5
               done
 
               # Set up ILM policy to delete logs older than 24 hours
-              curl -X PUT "http://elasticsearch.logging.svc.cluster.local:9200/_ilm/policy/delete-after-24h" -H "Content-Type: application/json" -d'
+              curl -X PUT "http://localhost:30753/_ilm/policy/delete-after-24h" -H "Content-Type: application/json" -d'
               {
                 "policy": {
                   "phases": {
@@ -30,7 +30,7 @@ spec:
               }'
 
               # Apply the ILM policy to the log indices
-              curl -X PUT "http://elasticsearch.logging.svc.cluster.local:9200/logs-*/_settings" -H "Content-Type: application/json" -d'
+              curl -X PUT "http://localhost:30753/logs-*/_settings" -H "Content-Type: application/json" -d'
               {
                 "index": {
                   "lifecycle": {
@@ -40,5 +40,5 @@ spec:
               }'
           env:
             - name: ES_HOST
-              value: "elasticsearch.logging.svc.cluster.local"
+              value: "localhost"
       restartPolicy: OnFailure

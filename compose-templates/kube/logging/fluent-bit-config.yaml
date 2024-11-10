@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluent-bit-config
+  namespace: logging
+data:
+  fluent-bit.conf: |
+    [SERVICE]
+        Flush         1
+        Daemon        Off
+        Log_Level     info
+        Parsers_File  parsers.conf
+
+    [INPUT]
+        Name          tail
+        Path          /var/log/containers/*.log
+        Tag           kube.*
+        DB            /var/log/flb_kube.db
+        Mem_Buf_Limit 5MB
+        Skip_Long_Lines On
+        Refresh_Interval 10
+
+    [FILTER]
+        Name          kubernetes
+        Match         kube.*
+        Kube_URL      https://kubernetes.default.svc.cluster.local:443
+        Merge_Log     On
+        Keep_Log      Off
+        Annotations   Off
+        Labels        On
+        K8S-Logging.Parser   On
+        K8S-Logging.Exclude  Off
+
+    [FILTER]
+        Name          grep
+        Match         kube.*
+        Regex         namespace_name (logging|learning)  # Only collect logs from these namespaces
+
+    [OUTPUT]
+        Name          es
+        Match         *
+        Host          localhost # Elastic service name
+        Port          30753
+        HTTP_User     elastic  # Set the Elasticsearch username if security is enabled
+        HTTP_Passwd   super_password  # Set the Elasticsearch password if security is enabled
+        Logstash_Format On
+        Logstash_Prefix fluent-bit
+        Retry_Limit   False
+
+  parsers.conf: |
+    [PARSER]
+        Name   docker
+        Format json
+        Time_Key time
+        Time_Format %Y-%m-%dT%H:%M:%S.%L
+        Time_Keep On
