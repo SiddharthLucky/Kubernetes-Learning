@@ -20,14 +20,18 @@ spec:
             - name: discovery.type
               value: single-node
             - name: ES_JAVA_OPTS
-              value: "-Xms256m -Xmx256m"
+              value: "-Xms512m -Xmx512m"  # Increase heap size for better stability
+            - name: xpack.security.enabled
+              value: "true"  # Enable X-Pack Security for authentication
+            - name: ELASTIC_PASSWORD
+              value: "super_password"  # Set superuser password for `elastic` account
           resources:
             requests:
-              memory: "512Mi"
-              cpu: "250m"
-            limits:
               memory: "1Gi"
               cpu: "500m"
+            limits:
+              memory: "2Gi"
+              cpu: "1"
           volumeMounts:
             - name: es-data
               mountPath: /usr/share/elasticsearch/data
@@ -38,7 +42,11 @@ spec:
           image: docker.elastic.co/kibana/kibana:7.10.0
           env:
             - name: ELASTICSEARCH_HOSTS
-              value: "http://localhost:9200"  # Connect to Elasticsearch via localhost
+              value: "http://localhost:9200"  # Connect to Elasticsearch on localhost
+            - name: ELASTICSEARCH_USERNAME
+              value: "elastic"  # Use the `elastic` superuser account
+            - name: ELASTICSEARCH_PASSWORD
+              value: "super_password"  # Use the same password as above
           resources:
             requests:
               memory: "256Mi"
