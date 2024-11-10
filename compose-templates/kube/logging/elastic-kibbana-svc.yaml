@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch-kibana-service
+  namespace: logging
+spec:
+  selector:
+    app: elasticsearch-kibana
+  ports:
+    - protocol: TCP
+      port: 5601
+      targetPort: 5601  # Expose Kibana on this service
+  type: NodePort  # Use LoadBalancer if on a cloud provider

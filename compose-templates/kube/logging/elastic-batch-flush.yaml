@@ -1,0 +1,44 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: setup-es-ilm
+  namespace: logging
+spec:
+  template:
+    spec:
+      containers:
+        - name: es-setup
+          image: curlimages/curl:latest
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              # Wait for Elasticsearch to be ready
+              until curl -s http://elasticsearch.logging.svc.cluster.local:9200; do
+                echo "Waiting for Elasticsearch..."
+                sleep 5
+              done
+
+              # Set up ILM policy to delete logs older than 24 hours
+              curl -X PUT "http://elasticsearch.logging.svc.cluster.local:9200/_ilm/policy/delete-after-24h" -H "Content-Type: application/json" -d'
+              {
+                "policy": {
+                  "phases": {
+                    "hot": { "actions": { } },
+                    "delete": { "min_age": "24h", "actions": { "delete": {} } }
+                  }
+                }
+              }'
+
+              # Apply the ILM policy to the log indices
+              curl -X PUT "http://elasticsearch.logging.svc.cluster.local:9200/logs-*/_settings" -H "Content-Type: application/json" -d'
+              {
+                "index": {
+                  "lifecycle": {
+                    "name": "delete-after-24h"
+                  }
+                }
+              }'
+          env:
+            - name: ES_HOST
+              value: "elasticsearch.logging.svc.cluster.local"
+      restartPolicy: OnFailure
