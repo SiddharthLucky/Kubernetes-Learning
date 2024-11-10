@@ -1,17 +1,31 @@
-apiVersion: v1
-kind: Pod
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: gradle-runner
+  name: gradle-app-deployment
   namespace: learning
 spec:
-  containers:
-    - name: gradle
-      image: gradle:latest
-      command: ["sleep", "infinity"]
-      volumeMounts:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gradle-app
+  template:
+    metadata:
+      labels:
+        app: gradle-app
+    spec:
+      containers:
+        - name: gradle-app
+          image: your-gradle-image:latest # Replace with your image name
+          resources:
+            limits:
+              cpu: "500m"          # Limit CPU to 500 millicores
+              memory: "512Mi"       # Limit memory to 512Mi
+            requests:
+              cpu: "250m"          # Request CPU to 250 millicores
+              memory: "256Mi"       # Request memory to 256Mi
+          volumeMounts:
+            - name: gradle-cache
+              mountPath: /home/gradle/.gradle # Path for Gradle cache
+      volumes:
         - name: gradle-cache
-          mountPath: /home/gradle/.gradle
-  restartPolicy: Never
-  volumes:
-    - name: gradle-cache
-      emptyDir: {}
+          emptyDir: {}                # Creates a temporary volume in the pod for caching

@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-pgadmin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres-pgadmin
+  template:
+    metadata:
+      labels:
+        app: postgres-pgadmin
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:latest
+          env:
+            - name: POSTGRES_USER
+              value: "admin"
+            - name: POSTGRES_PASSWORD
+              value: "1234"
+            - name: POSTGRES_DB
+              value: "api-db"
+          ports:
+            - containerPort: 5432
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          volumeMounts:
+            - name: postgresdb-vol
+              mountPath: /var/lib/postgresql/data
+
+        - name: pgadmin
+          image: dpage/pgadmin4:latest
+          env:
+            - name: PGADMIN_DEFAULT_EMAIL
+              value: "admin@admin.com"
+            - name: PGADMIN_DEFAULT_PASSWORD
+              value: "1234"
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "250m"
+          volumeMounts:
+            - name: pgadmin4-vol
+              mountPath: /var/lib/pgadmin4
+            - name: pgadmin-vol
+              mountPath: /var/lib/pgadmin
+      volumes:
+        - name: postgresdb-vol
+          persistentVolumeClaim:
+            claimName: postgresdb-vol
+        - name: pgadmin4-vol
+          persistentVolumeClaim:
+            claimName: pgadmin4-vol
+        - name: pgadmin-vol
+          persistentVolumeClaim:
+            claimName: pgadmin-vol

@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+  postgres:
+    container_name: postgres
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: api-db
+    ports:
+      - "5432:5432"
+    user: "postgres"
+    volumes:
+      - PostgresDB_Vol:/var/lib/postgresql/data
+    networks:
+      docker-static-network:
+        ipv4_address: 192.168.8.183
+
+
+  pgadmin:
+    container_name: pgadmin4
+    networks:
+      docker-static-network:
+        ipv4_address: 192.168.8.184
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: 1234
+    ports:
+      - "5050:80"
+    volumes:
+      - PGAdmin4_Vol:/var/lib/pgadmin4
+      - PGAdmin_Vol:/var/lib/pgadmin
+    user: "pgadmin"
+    depends_on:
+      - postgres
+
+volumes:
+  PostgresDB_Vol:
+  PGAdmin4_Vol:
+  PGAdmin_Vol:
+
+networks:
+  docker-static-network:
+    external: true
